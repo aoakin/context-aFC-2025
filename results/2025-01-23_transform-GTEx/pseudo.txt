@@ -1,0 +1,76 @@
+Goal: Get median read counts of each gene by tissue
+
+Resulting table:
+Name		Description	Adipose-subcut	Adipose-vis	...
+ENSG000		GENE1		0		30		...
+...
+
+------------
+
+Inputs:
+- Metadata: GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt
+	- format: TSV
+	- columns needed:
+		- SAMPID (GTEX-INDIV-TISSUE...)
+		- SMTSD [tissue type, specific] (Muscle - Skeletal)
+- Gene count data: GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_reads.gct
+	- format: TSV
+	- columns:
+		- Name (Ensembl gene name; ENSG00...)
+		- Description (human-readable gene name)
+		- All sample ids are separate cols (GTEX-INDIV-TISSUE...)
+
+READ FILE Metadata
+OBJ_DF Metadata = Metadata[SAMPID, SMTSD] # downsample to important columns
+
+READ FILE GeneCounts
+
+
+# Tissue Membership
+MAKE DICT TissueSampleMapping
+MAKE TUPLE UniqueTissues
+for tis in UniqueTissues: 
+	APPEND TissueSampleMapping <- Metadata.SAMPID WHERE Metadata.SMTSD == tis
+###
+TissueSampleMapping = {'Heart':(GTEX...1,GTEX...304), 'Whole Blood':(GTEX...2)}
+###
+
+MAKE OBJ_DF MedianCount_df <- cols(Name, Description)
+
+# Calculate median gene count for every tissue
+for tis in UniqueTissues:
+	tis_samples = TissueSampleMapping.get(tis)
+	tis_median_gene_count = GeneCounts[tis_samples].median(axis=1)
+	APPEND_COLUMN(MedianCount_df) <- ColName(tis), Values(tis_median_gene_count)
+	MedianCount_df[tis] = tis_median_gene_count
+
+for row(gene) in GeneCounts:
+	
+	APPEND MedianCount_df <-
+		['Name', 'Description',
+
+
+
+
+
+for row(gene) in GeneCounts:
+		
+
+
+
+
+
+
+
+
+
+
+for tissue in unique(Tissue.SMTSD):
+	OBJ TissueSamples = GET rows in Metadata WHERE SMTSD == tissue
+	for sample in TissueSamples:
+		
+	
+
+
+for row(gene) in GeneCounts
+	extract GeneCounts.row['Name', 'Description', 
