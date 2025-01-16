@@ -1,9 +1,10 @@
-# CellFC (Wi2025 Rotation project)
+# Context-aFC (Wi2025 Rotation project)
 
-Method for quantifying cell context-specific effect size of eQTLs
+Generalized extension of aFC (Mohammadi et al. 2017) for quantifying the effect size of eQTLs across cellular contexts
 
 Lang(s): R, Python
+
 Dataset(s): GTEx Analysis V8
 
-P. Mohammadi
 A.O. Akinrinade
+P. Mohammadi
