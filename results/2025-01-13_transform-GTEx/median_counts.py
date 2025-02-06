@@ -17,8 +17,19 @@ tsk = "load data"
 startTask(tsk)
 Metadata = pd.read_csv('../../dat/GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt', sep='\t')
 Metadata = Metadata[['SAMPID','SMTSD']] # Extract sample id and tissue id
+tissueInfo = pd.read_csv('../../dat/tissueInfo.tsv', sep='\t')
+tiss_dict = dict(zip(tissueInfo['tissueSiteDetail'], tissueInfo['tissueSiteDetailAbbr']))
+tiss_abrv = tissueInfo['tissueSiteDetailAbbr'].unique()
+# intersection = list(set(Metadata['SMTSD']) & set(tissueInfo['tissueSiteDetail']))
+# print(len(intersection))
+# print(Metadata['SMTSD'].head())
+# print(tissueInfo[['tissueSiteDetail', 'tissueSiteDetailAbbr']].head())
+Metadata.replace({"SMTSD": tiss_dict}, inplace=True)
+Metadata = Metadata[Metadata['SMTSD'].isin(tiss_abrv)] # keep tissues that are not CML
+print("done loading metadata")
 GeneCounts = pd.read_csv('../../dat/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_reads.gct', skiprows=2, sep='\t') #skiprows to avoid metdata
 GeneCounts['Name'] = GeneCounts['Name'].str.split('.').str[0]
+print("done loading genecounts")
 peekTable(GeneCounts)
 endTask(tsk)
 

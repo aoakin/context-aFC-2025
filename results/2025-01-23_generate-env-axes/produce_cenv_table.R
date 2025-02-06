@@ -8,7 +8,8 @@ genes_protein_lncRNA <- gtf %>%
   dplyr::filter(gene_biotype %in% c("protein_coding", "lncRNA")) %>%
   dplyr::pull("gene_id")
 
-expr <- read.table('../../dat/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_median_tpm.gct', skip=2, sep="\t", header=TRUE) #rows: genes, cols: tissues # nolint: line_length_linter.
+expr <- read.table('../../dat/MedianGeneCount_GTEx_v8.tsv', sep="\t", header=TRUE) #rows: genes, cols: tissues # nolint: line_length_linter.
+expr <- expr[, colSums(is.na(expr)) == 0]
 expr$Name <-  gsub("\\.\\d+$", "", expr$Name) # remove .# at the end of every gene name
 expr <- expr[expr$Name %in% genes_protein_lncRNA,]
 expr <- expr[rowSums(expr[,3:ncol(expr)] != 0) > 0,] # remove columns only containing zeroes
@@ -38,5 +39,5 @@ for (axis in colnames(pc_dat)) {
   cenv_i <- ecdf(pc_axis_coords)
   cenv_df[,axis] <- sapply(X = pc_dat[,axis],FUN = cenv_i)
 }
-
-write.table(tibble::rownames_to_column(cenv_df, "TissueType"), '../../dat/GTEx_cenv_data.tsv', sep='\t', row.names = FALSE)
+head(cenv_df[1:5])
+write.table(tibble::rownames_to_column(cenv_df, "TissueType"), '../../dat/GTEx_cenv_data_median_counts.tsv', sep='\t', row.names = FALSE)
