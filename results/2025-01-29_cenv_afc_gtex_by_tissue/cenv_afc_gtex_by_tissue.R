@@ -4,7 +4,7 @@ library(tidyr)
 library(data.table)
 library(ShapleyValue)
 library(tictoc)
-library(fitdistrplus)
+# library(fitdistrplus)
 
 # Generate coefficient vector
 coef_vec_generator <- function(fit){
@@ -93,6 +93,8 @@ effectsize_lst <- list()
 cenv_fit_p <- c()
 corr_lst <- list()
 
+preFDR_total_sig_hit <- 0
+
 # afc_cenv_formula <- paste("log2_aFC ~", paste0(cenv_colnames, collapse=" + "))
 
 cat("Generating p-val_table\n")
@@ -104,10 +106,10 @@ for (i in 1:nrow(unique_gv_combos)) {
 	cat("G: ", gv_combo$gene_id, " V: ", gv_combo$variant_id, "|", i, "out of", nrow(unique_gv_combos))
 	gv_afc_cenv <- afcn_gv_tbl %>% 
 		filter(gene_id == gv_combo$gene_id, variant_id == gv_combo$variant_id) %>%
-		select(-c('gene_id','variant_id'))
+		dplyr::select(-c(gene_id,variant_id))
 	gv_afc_cenv <- column_to_rownames(gv_afc_cenv, "tissue")
 	gv_afc <- gv_afc_cenv$log2_aFC
-	gv_cenv <- gv_afc_cenv %>% select(-log2_aFC)
+	gv_cenv <- gv_afc_cenv %>% dplyr::select(-log2_aFC)
 	# fit_list <- list()
 	# p.val_list <- list()
 	# q.val_list <- list()
@@ -121,7 +123,8 @@ for (i in 1:nrow(unique_gv_combos)) {
 	# print(lmp(cenv_fit))
 	effectsize_lst[[i]] <- coef_vec_generator(cenv_fit)
 	if (cenv_fit_p[i] < 0.05) {
-		cat("*\n")
+		preFDR_total_sig_hit = preFDR_total_sig_hit + 1
+		cat("*\tpre-FDR hit #", preFDR_total_sig_hit, "\n")
 	} else {
 		cat("\n")
 	}

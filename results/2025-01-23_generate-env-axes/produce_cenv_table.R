@@ -31,7 +31,8 @@ log2p1 <- function(x) {
 }
 t_expr <- data.frame(lapply(t_expr, log2p1))
 rownames(t_expr) <- tissue_types
-pc <- prcomp(t_expr, scale = TRUE, center = TRUE) # zero centered, unit variance BEFORE analysis
+# pc <- prcomp(t_expr, scale = TRUE, center = TRUE) # zero centered, unit variance BEFORE analysis
+pc <- prcomp(t_expr, scale = FALSE, center = TRUE) # zero centered, variance not normalized BEFORE analysis | why? different genes need not be weighted equally
 n_hits <- 20
 total_pc_axes <- ncol(pc$rotation)
 
