@@ -9,6 +9,11 @@ genes_protein_lncRNA <- gtf %>%
   dplyr::pull("gene_id")
 
 expr <- read.table('../../dat/MedianGeneCount_GTEx_v8.tsv', sep="\t", header=TRUE) #rows: genes, cols: tissues # nolint: line_length_linter.
+afcn_files <- list.files('../../dat/afcn')
+afcn_files <- file.path('../../dat/afcn/', afcn_files)
+afcn_tissues <- gsub("^.*/([^.]+)\\..*$", "\\1", afcn_files)
+expr <- expr %>%
+  select(Name, Description, any_of(afcn_tissues)) # drop tissues(indivs) without afc
 expr <- expr[, colSums(is.na(expr)) == 0]
 expr$Name <-  gsub("\\.\\d+$", "", expr$Name) # remove .# at the end of every gene name
 expr <- expr[expr$Name %in% genes_protein_lncRNA,]
@@ -41,3 +46,24 @@ for (axis in colnames(pc_dat)) {
 }
 head(cenv_df[1:5])
 write.table(tibble::rownames_to_column(cenv_df, "TissueType"), '../../dat/GTEx_cenv_data_median_counts.tsv', sep='\t', row.names = FALSE)
+
+
+# Generate tables with less PCs to avoid square matrix problem
+pc_eigenval <- (pc$sdev)^2
+total_pc_var <- sum(pc_eigenval)
+
+for (i in 1:total_pc_axes) {
+  cumvar <- sum(pc_eigenval[1:i])/total_pc_var
+  if (cumvar >= 0.90 && !exists("cenv_cutoff_90p")) {
+    cenv_cutoff_90p <- i
+  }
+  if (cumvar >= 0.95 && !exists("cenv_cutoff_95p")) {
+    cenv_cutoff_95p <- i
+  }
+  if (cumvar >= 0.99 && !exists("cenv_cutoff_99p")) {
+    cenv_cutoff_99p <- i
+  }
+}
+write.table(tibble::rownames_to_column(cenv_df[1:cenv_cutoff_90p], "TissueType"), '../../dat/GTEx_cenv_data_median_counts_90p.tsv', sep='\t', row.names = FALSE)
+write.table(tibble::rownames_to_column(cenv_df[1:cenv_cutoff_95p], "TissueType"), '../../dat/GTEx_cenv_data_median_counts_95p.tsv', sep='\t', row.names = FALSE)
+write.table(tibble::rownames_to_column(cenv_df[1:cenv_cutoff_99p], "TissueType"), '../../dat/GTEx_cenv_data_median_counts_99p.tsv', sep='\t', row.names = FALSE)
