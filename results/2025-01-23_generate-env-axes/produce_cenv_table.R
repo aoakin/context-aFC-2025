@@ -71,7 +71,7 @@ for (i in 1:total_pc_axes) {
     cenv_cutoff_99p <- i
   }
 }
-write.table(tibble::rownames_to_column(cenv_df[1:cenv_cutoff_70p], "TissueType"), '../../dat/GTEx_cenv_data_median_counts_70p.tsv', sep='\t', row.names = FALSE)
+write.table(tibble::rownames_to_column(cenv_df[1:cenv_cutoff_60p], "TissueType"), '../../dat/GTEx_cenv_data_median_counts_60p.tsv', sep='\t', row.names = FALSE)
 write.table(tibble::rownames_to_column(cenv_df[1:cenv_cutoff_70p], "TissueType"), '../../dat/GTEx_cenv_data_median_counts_70p.tsv', sep='\t', row.names = FALSE)
 write.table(tibble::rownames_to_column(cenv_df[1:cenv_cutoff_90p], "TissueType"), '../../dat/GTEx_cenv_data_median_counts_90p.tsv', sep='\t', row.names = FALSE)
 write.table(tibble::rownames_to_column(cenv_df[1:cenv_cutoff_95p], "TissueType"), '../../dat/GTEx_cenv_data_median_counts_95p.tsv', sep='\t', row.names = FALSE)
