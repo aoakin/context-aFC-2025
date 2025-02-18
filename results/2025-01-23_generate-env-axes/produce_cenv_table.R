@@ -14,10 +14,10 @@ afcn_files <- file.path('../../dat/afcn/', afcn_files)
 afcn_tissues <- gsub("^.*/([^.]+)\\..*$", "\\1", afcn_files)
 expr <- expr %>%
   select(Name, Description, any_of(afcn_tissues)) # drop tissues(indivs) without afc
-expr <- expr[, colSums(is.na(expr)) == 0]
+expr <- expr[rowSums(expr[-c(1,2)]) > 10,] # filter out genes with low expression (<= 10 counts across all samples)
 expr$Name <-  gsub("\\.\\d+$", "", expr$Name) # remove .# at the end of every gene name
 expr <- expr[expr$Name %in% genes_protein_lncRNA,]
-expr <- expr[rowSums(expr[,3:ncol(expr)] != 0) > 0,] # remove columns only containing zeroes
+# expr <- expr[rowSums(expr[,3:ncol(expr)] != 0) > 0,] # remove columns only containing zeroes
 gene_descriptions <- setNames(expr$Description, expr$Name)
 tissue_types <- colnames(expr)[-c(1:2)]
 t_expr <- transpose(expr)
@@ -32,7 +32,7 @@ log2p1 <- function(x) {
 t_expr <- data.frame(lapply(t_expr, log2p1))
 rownames(t_expr) <- tissue_types
 # pc <- prcomp(t_expr, scale = TRUE, center = TRUE) # zero centered, unit variance BEFORE analysis
-pc <- prcomp(t_expr, scale = FALSE, center = TRUE) # zero centered, variance not normalized BEFORE analysis | why? different genes need not be weighted equally
+pc <- prcomp(t_expr, scale = TRUE, center = TRUE) # zero centered, variance not normalized BEFORE analysis | why? different genes need not be weighted equally
 n_hits <- 20
 total_pc_axes <- ncol(pc$rotation)
 
@@ -55,6 +55,12 @@ total_pc_var <- sum(pc_eigenval)
 
 for (i in 1:total_pc_axes) {
   cumvar <- sum(pc_eigenval[1:i])/total_pc_var
+  if (cumvar >= 0.60 && !exists("cenv_cutoff_60p")) {
+    cenv_cutoff_60p <- i
+  }
+  if (cumvar >= 0.70 && !exists("cenv_cutoff_70p")) {
+    cenv_cutoff_70p <- i
+  }
   if (cumvar >= 0.90 && !exists("cenv_cutoff_90p")) {
     cenv_cutoff_90p <- i
   }
@@ -65,6 +71,8 @@ for (i in 1:total_pc_axes) {
     cenv_cutoff_99p <- i
   }
 }
+write.table(tibble::rownames_to_column(cenv_df[1:cenv_cutoff_70p], "TissueType"), '../../dat/GTEx_cenv_data_median_counts_70p.tsv', sep='\t', row.names = FALSE)
+write.table(tibble::rownames_to_column(cenv_df[1:cenv_cutoff_70p], "TissueType"), '../../dat/GTEx_cenv_data_median_counts_70p.tsv', sep='\t', row.names = FALSE)
 write.table(tibble::rownames_to_column(cenv_df[1:cenv_cutoff_90p], "TissueType"), '../../dat/GTEx_cenv_data_median_counts_90p.tsv', sep='\t', row.names = FALSE)
 write.table(tibble::rownames_to_column(cenv_df[1:cenv_cutoff_95p], "TissueType"), '../../dat/GTEx_cenv_data_median_counts_95p.tsv', sep='\t', row.names = FALSE)
 write.table(tibble::rownames_to_column(cenv_df[1:cenv_cutoff_99p], "TissueType"), '../../dat/GTEx_cenv_data_median_counts_99p.tsv', sep='\t', row.names = FALSE)

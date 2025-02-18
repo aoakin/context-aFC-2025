@@ -32,7 +32,7 @@ lmp <- function (modelobject) {
 }
 
 # cenv <- data.table::fread('../../dat/GTEx_cenv_data_median_counts.tsv', header=TRUE) # all of data
-cenv <- data.table::fread('../../dat/GTEx_cenv_data_median_counts_90p.tsv', header=TRUE) # 90% of data
+cenv <- data.table::fread('../../dat/GTEx_cenv_data_median_counts_70p.tsv', header=TRUE) # 90% of data
 cenv <- tibble::column_to_rownames(cenv, "TissueType")
 cat("Total cenv columns:", ncol(cenv), "\n")
 print(as_tibble(cenv[]))
