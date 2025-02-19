@@ -108,8 +108,6 @@ for (i in 1:nrow(unique_gv_combos)) {
 		filter(gene_id == gv_combo$gene_id, variant_id == gv_combo$variant_id) %>%
 		dplyr::select(-c(gene_id,variant_id))
 	gv_afc_cenv <- column_to_rownames(gv_afc_cenv, "tissue")
-	gv_afc <- gv_afc_cenv$log2_aFC
-	gv_cenv <- gv_afc_cenv %>% dplyr::select(-log2_aFC)
 	# fit_list <- list()
 	# p.val_list <- list()
 	# q.val_list <- list()
