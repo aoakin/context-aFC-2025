@@ -15,6 +15,7 @@ afcn_tissues <- gsub("^.*/([^.]+)\\..*$", "\\1", afcn_files)
 expr <- expr %>%
   select(Name, Description, any_of(afcn_tissues)) # drop tissues(indivs) without afc
 expr <- expr[rowSums(expr[-c(1,2)]) >= 10,] # filter out genes with low expression (<= 10 counts across all samples)
+# expr <- expr[apply(expr[-c(1,2)] > 0, 1, sum) >= 2, ] # only keep genes that have reads in at least two tissues
 expr$Name <-  gsub("\\.\\d+$", "", expr$Name) # remove .# at the end of every gene name
 expr <- expr[expr$Name %in% genes_protein_lncRNA,]
 # expr <- expr[rowSums(expr[,3:ncol(expr)] != 0) > 0,] # remove columns only containing zeroes
