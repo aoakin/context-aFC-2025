@@ -2,6 +2,10 @@ library(rtracklayer)
 library(dplyr)
 library(data.table)
 
+InvNormTransform <- function(x) {
+	return(qnorm((rank(x,na.last="keep")-0.5)/sum(!is.na(x)))) #-0.5 accounts for missing data? Credit: 
+}
+
 gtf <- readGFF('../../dat/Homo_sapiens.GRCh38.113.chr.gtf')
 genes_protein_lncRNA <- gtf %>%
   dplyr::filter(type == "gene") %>% 
@@ -34,7 +38,6 @@ t_expr <- data.frame(lapply(t_expr, log2p1))
 rownames(t_expr) <- tissue_types
 # pc <- prcomp(t_expr, scale = TRUE, center = TRUE) # zero centered, unit variance BEFORE analysis
 pc <- prcomp(t_expr, scale = TRUE, center = TRUE) # zero centered, variance not normalized BEFORE analysis | why? different genes need not be weighted equally
-n_hits <- 20
 total_pc_axes <- ncol(pc$rotation)
 
 pc_dat <- data.frame(pc$x)
@@ -42,13 +45,28 @@ rownames(pc_dat) <- tissue_types
 
 cenv_df <- pc_dat
 for (axis in colnames(pc_dat)) {
-  pc_axis_coords <- pc_dat[,axis]
-  cenv_i <- ecdf(pc_axis_coords)
-  cenv_df[,axis] <- sapply(X = pc_dat[,axis],FUN = cenv_i)
+  # CDF-ing
+  # pc_axis_coords <- pc_dat[,axis]
+  # cenv_i <- ecdf(pc_axis_coords)
+  # cenv_df[,axis] <- sapply(X = pc_dat[,axis],FUN = cenv_i)
+  # InvNormTransforming
+  cenv_df[,axis] <- InvNormTransform(pc_dat[,axis])
 }
 head(cenv_df[1:5])
 write.table(tibble::rownames_to_column(cenv_df, "TissueType"), '../../dat/GTEx_cenv_data_median_counts.tsv', sep='\t', row.names = FALSE)
 
+n_hits <- 2000
+for (axis in colnames(pc$rotation)) {
+  gene_eigenvec <- pc$rotation[,axis]
+  top_genes_ens_id <- names(head(sort(abs(gene_eigenvec), decreasing=TRUE), n_hits))
+  top_genes <- unname(gene_descriptions[top_genes_ens_id]) # this mess gets the top n genes
+  top_gene_eigenvec <- gene_eigenvec[top_genes_ens_id]
+  axis_eigengene_tbl <- as.data.frame(top_gene_eigenvec)
+  axis_eigengene_tbl <- tibble::rownames_to_column(axis_eigengene_tbl, "ensembl_id")
+  colnames(axis_eigengene_tbl) <- c("ensembl_id", "eigenval")
+  axis_eigenval_tbl_filename <- paste0("../../dat/eigengene_tables/eigengene_tbl_", axis, ".csv")
+  write.csv(axis_eigengene_tbl, axis_eigenval_tbl_filename, row.names=FALSE)
+}
 
 # Generate tables with less PCs to avoid square matrix problem
 pc_eigenval <- (pc$sdev)^2
