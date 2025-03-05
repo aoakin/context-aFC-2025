@@ -31,6 +31,10 @@ lmp <- function (modelobject) {
     return(p)
 }
 
+InvNormTransform <- function(x) {
+	return(qnorm((rank(x,na.last="keep")-0.5)/sum(!is.na(x)))) #-0.5 accounts for missing data? Credit: 
+}
+
 # cenv <- data.table::fread('../../dat/GTEx_cenv_data_median_counts.tsv', header=TRUE) # all of data
 cenv <- data.table::fread('../../dat/GTEx_cenv_data_median_counts_70p.tsv', header=TRUE) # 90% of data
 cenv <- tibble::column_to_rownames(cenv, "TissueType")
@@ -67,7 +71,7 @@ for (i in cenv_colnames) {
 }
 
 afcn_gv_tbl <- afcn_gv_tbl %>% drop_na() # drop eQTLs with n/a
-afcn_gv_tbl$log2_aFC <- qnorm((rank(afcn_gv_tbl$log2_aFC,na.last="keep")-0.5)/sum(!is.na(afcn_gv_tbl$log2_aFC))) # INT
+afcn_gv_tbl$log2_aFC <- InvNormTransform(afcn_gv_tbl$log2_aFC)
 
 print(as.data.table(afcn_gv_tbl)[,1:6][sample(.N,6)])
 
