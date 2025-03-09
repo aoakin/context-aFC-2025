@@ -35,6 +35,7 @@ log2p1 <- function(x) {
   return (log2(x+1))
 }
 t_expr <- data.frame(lapply(t_expr, log2p1))
+t_expr <- data.frame(apply(t_expr, 2, InvNormTransform))
 rownames(t_expr) <- tissue_types
 # pc <- prcomp(t_expr, scale = TRUE, center = TRUE) # zero centered, unit variance BEFORE analysis
 pc <- prcomp(t_expr, scale = TRUE, center = TRUE) # zero centered, variance not normalized BEFORE analysis | why? different genes need not be weighted equally
@@ -44,14 +45,14 @@ pc_dat <- data.frame(pc$x)
 rownames(pc_dat) <- tissue_types
 
 cenv_df <- pc_dat
-for (axis in colnames(pc_dat)) {
-  # CDF-ing
-  # pc_axis_coords <- pc_dat[,axis]
-  # cenv_i <- ecdf(pc_axis_coords)
-  # cenv_df[,axis] <- sapply(X = pc_dat[,axis],FUN = cenv_i)
-  # InvNormTransforming
-  cenv_df[,axis] <- InvNormTransform(pc_dat[,axis])
-}
+# for (axis in colnames(pc_dat)) {
+#   # CDF-ing
+#   # pc_axis_coords <- pc_dat[,axis]
+#   # cenv_i <- ecdf(pc_axis_coords)
+#   # cenv_df[,axis] <- sapply(X = pc_dat[,axis],FUN = cenv_i)
+#   # InvNormTransforming
+#   # cenv_df[,axis] <- InvNormTransform(pc_dat[,axis])
+# }
 head(cenv_df[1:5])
 write.table(tibble::rownames_to_column(cenv_df, "TissueType"), '../../dat/GTEx_cenv_data_median_counts.tsv', sep='\t', row.names = FALSE)
 

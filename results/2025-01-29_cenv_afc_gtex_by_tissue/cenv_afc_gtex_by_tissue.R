@@ -76,6 +76,8 @@ afcn_gv_tbl$log2_aFC <- InvNormTransform(afcn_gv_tbl$log2_aFC)
 print(as.data.table(afcn_gv_tbl)[,1:6][sample(.N,6)])
 
 unique_gv_combos <- afcn_gv_tbl %>% distinct(gene_id, variant_id)
+print("Total unique GV combos considered:")
+print(nrow(unique_gv_combos))
 
 pval_tbl <- data.frame(matrix(vector(), 0, 2+ncol(cenv),
 						dimnames = list(c(), c("gene_id", "variant_id", paste0("pval_",cenv_colnames)))),
